@@ -1,3 +1,8 @@
+//Code Modularization needs folllowing
+const apiRoutes = require('./routes/apiRoutes');
+const htmlRoutes = require('./routes/htmlRoutes');
+
+
 //We have to import and use the fs library to write that data to animals.json.
 const fs = require('fs');
 //Path, built into the Node.js, makes working with our file system a little more predictable
@@ -11,7 +16,7 @@ const express = require('express');
 
 const PORT = process.env.PORT || 3001;
 
-// instantiates the server
+// instantiates the server, app represents a single instance of the Express.js server.
 const app = express();
 
 
@@ -24,160 +29,165 @@ app.use(express.json());
 //Express.js middleware that instructs the server to make certain files readily available and to not gate it behind a server endpoint.
 app.use(express.static('public'));
 
+//NEEDED FOR CODE MODULARIZATION
+//tells the server when a client navigates to <ourhost>/api, the app will use the router we set up in apiRoutes.
+app.use('/api', apiRoutes);
+app.use('/', htmlRoutes);
+
 //This function will take in req.query as an argument and filter through the animals accordingly, returning the new filtered array.
-function filterByQuery(query, animalsArray) {
-    let personalityTraitsArray = [];
-    // Note that we save the animalsArray as filteredResults here:
-    let filteredResults = animalsArray;
-    if (query.personalityTraits) {
-        // Save personalityTraits as a dedicated array.
-        // If personalityTraits is a string, place it into a new array and save.
-        if (typeof query.personalityTraits === 'string') {
-            personalityTraitsArray = [query.personalityTraits];
-        } else {
-            personalityTraitsArray = query.personalityTraits;
-        }
-        // Loop through each trait in the personalityTraits array:
-        personalityTraitsArray.forEach(trait => {
-            // Check the trait against each animal in the filteredResults array.
-            // Remember, it is initially a copy of the animalsArray,
-            // but here we're updating it for each trait in the .forEach() loop.
-            // For each trait being targeted by the filter, the filteredResults
-            // array will then contain only the entries that contain the trait,
-            // so at the end we'll have an array of animals that have every one 
-            // of the traits when the .forEach() loop is finished.
-            filteredResults = filteredResults.filter(
-                animal => animal.personalityTraits.indexOf(trait) !== -1
-            );
-        });
-    }
-    if (query.diet) {
-        filteredResults = filteredResults.filter(animal => animal.diet === query.diet);
-    }
-    if (query.species) {
-        filteredResults = filteredResults.filter(animal => animal.species === query.species);
-    }
-    if (query.name) {
-        filteredResults = filteredResults.filter(animal => animal.name === query.name);
-    }
-    // return the filtered results:
-    return filteredResults;
-}
+// function filterByQuery(query, animalsArray) {
+//     let personalityTraitsArray = [];
+//     // Note that we save the animalsArray as filteredResults here:
+//     let filteredResults = animalsArray;
+//     if (query.personalityTraits) {
+//         // Save personalityTraits as a dedicated array.
+//         // If personalityTraits is a string, place it into a new array and save.
+//         if (typeof query.personalityTraits === 'string') {
+//             personalityTraitsArray = [query.personalityTraits];
+//         } else {
+//             personalityTraitsArray = query.personalityTraits;
+//         }
+//         // Loop through each trait in the personalityTraits array:
+//         personalityTraitsArray.forEach(trait => {
+//             // Check the trait against each animal in the filteredResults array.
+//             // Remember, it is initially a copy of the animalsArray,
+//             // but here we're updating it for each trait in the .forEach() loop.
+//             // For each trait being targeted by the filter, the filteredResults
+//             // array will then contain only the entries that contain the trait,
+//             // so at the end we'll have an array of animals that have every one 
+//             // of the traits when the .forEach() loop is finished.
+//             filteredResults = filteredResults.filter(
+//                 animal => animal.personalityTraits.indexOf(trait) !== -1
+//             );
+//         });
+//     }
+//     if (query.diet) {
+//         filteredResults = filteredResults.filter(animal => animal.diet === query.diet);
+//     }
+//     if (query.species) {
+//         filteredResults = filteredResults.filter(animal => animal.species === query.species);
+//     }
+//     if (query.name) {
+//         filteredResults = filteredResults.filter(animal => animal.name === query.name);
+//     }
+//     // return the filtered results:
+//     return filteredResults;
+// }
 
 //New  function  that takes in the id and array of animals and returns a single animal object
-function findById(id, animalsArray) {
-    const result = animalsArray.filter(animal => animal.id === id)[0];
-    return result; 
-}
+// function findById(id, animalsArray) {
+//     const result = animalsArray.filter(animal => animal.id === id)[0];
+//     return result; 
+// }
 
 
-//New POST function that accepts the POST route's req.body value and the array we want to add the data to.
-// execute this function  within the app.post() route's callback function - it'll take the new animal data and add it to the animalsArray we passed in, and then write the new array data to animals.json.
-function createNewAnimal(body, animalsArray) {
+// //New POST function that accepts the POST route's req.body value and the array we want to add the data to.
+// // execute this function  within the app.post() route's callback function - it'll take the new animal data and add it to the animalsArray we passed in, and then write the new array data to animals.json.
+// function createNewAnimal(body, animalsArray) {
 
-    //Now when we POST a new animal, we'll add it to the imported animals array from the animals.json file
-    const animal = body;
-    animalsArray.push(animal);
+//     //Now when we POST a new animal, we'll add it to the imported animals array from the animals.json file
+//     const animal = body;
+//     animalsArray.push(animal);
 
-    fs.writeFileSync(
-        //we use the method path.join() to join the value of __dirname, which represents the directory of the file we execute the code in, with the path to the animals.json file.
-        path.join(__dirname, './data/animals.json'),
+//     fs.writeFileSync(
+//         //we use the method path.join() to join the value of __dirname, which represents the directory of the file we execute the code in, with the path to the animals.json file.
+//         path.join(__dirname, './data/animals.json'),
        
-        //Saving the JavaScript array data as JSON,
-        //The other two arguments used in the method, null and 2, are means of keeping our data formatted.
-        //The null argument means we don't want to edit any of our existing data; if we did, we could pass something in there.
-        //The 2 indicates we want to create white space between our values to make it more readable.
-        JSON.stringify({ animals: animalsArray }, null, 2)
-    );
+//         //Saving the JavaScript array data as JSON,
+//         //The other two arguments used in the method, null and 2, are means of keeping our data formatted.
+//         //The null argument means we don't want to edit any of our existing data; if we did, we could pass something in there.
+//         //The 2 indicates we want to create white space between our values to make it more readable.
+//         JSON.stringify({ animals: animalsArray }, null, 2)
+//     );
 
-    //return finished code to poste route for response
-    return animal;
-}
+//     //return finished code to poste route for response
+//     return animal;
+// }
 
 
 //Creating Validation
 //the animal parameter is going to be the content from req.body
-function validateAnimal(animal) {
-    if (!animal.name || typeof animal.name !== 'string') {
-      return false;
-    }
-    if (!animal.species || typeof animal.species !== 'string') {
-      return false;
-    }
-    if (!animal.diet || typeof animal.diet !== 'string') {
-      return false;
-    }
-    if (!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) {
-      return false;
-    }
-    return true;
-  }
+// function validateAnimal(animal) {
+//     if (!animal.name || typeof animal.name !== 'string') {
+//       return false;
+//     }
+//     if (!animal.species || typeof animal.species !== 'string') {
+//       return false;
+//     }
+//     if (!animal.diet || typeof animal.diet !== 'string') {
+//       return false;
+//     }
+//     if (!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) {
+//       return false;
+//     }
+//     return true;
+// }
 
 
-//creating a route that the front-end can request data from.Add the route just before app.listen()
-//The second arg is a callback function that will execute every time that route is accessed with a GET request.
-app.get('/api/animals', (req, res) => {
-    let results = animals;
-    if (req.query) {
-        results = filterByQuery(req.query, results);
-    }
-    res.json(results);
-});
+// //creating a route that the front-end can request data from.Add the route just before app.listen()
+// //The second arg is a callback function that will execute every time that route is accessed with a GET request.
+// app.get('/api/animals', (req, res) => {
+//     let results = animals;
+//     if (req.query) {
+//         results = filterByQuery(req.query, results);
+//     }
+//     res.json(results);
+// });
 
-//new GET route SEARCH BY ID...A PARAM route must come after the other GET route
-//.param is specific to a single property, often intended to retrieve a single record.
-app.get('/api/animals/:id', (req, res) => {
-    const result = findById(req.params.id, animals);
-    if (result) {
-        res.json(result);
-    } else {
-        res.send(404);
-    }
-});
+// //new GET route SEARCH BY ID...A PARAM route must come after the other GET route
+// //.param is specific to a single property, often intended to retrieve a single record.
+// app.get('/api/animals/:id', (req, res) => {
+//     const result = findById(req.params.id, animals);
+//     if (result) {
+//         res.json(result);
+//     } else {
+//         res.send(404);
+//     }
+// });
 
-//RECEIVING DATA
-app.post('/api/animals', (req, res) => {
-    //req.body is where our incoming content will be
-    //With POST requests, we typically package up data as an object, and send it to the server. 
-    //The req.body property is where we can access that data on the server side and do something with it.
+// //RECEIVING DATA
+// app.post('/api/animals', (req, res) => {
+//     //req.body is where our incoming content will be
+//     //With POST requests, we typically package up data as an object, and send it to the server. 
+//     //The req.body property is where we can access that data on the server side and do something with it.
     
-    //Adds unique ID based on what the next index of the array will be
-    req.body.id = animals.length.toString();
+//     //Adds unique ID based on what the next index of the array will be
+//     req.body.id = animals.length.toString();
 
-    // if any data in req.body is incorrect, send 400 error back
-    if (!validateAnimal(req.body)) {
-        res.status(400).send('The animal is not properly formatted.');
-    } else {
-        // add animal to json file and animals array in this function
-        const animal = createNewAnimal(req.body, animals);
+//     // if any data in req.body is incorrect, send 400 error back
+//     if (!validateAnimal(req.body)) {
+//         res.status(400).send('The animal is not properly formatted.');
+//     } else {
+//         // add animal to json file and animals array in this function
+//         const animal = createNewAnimal(req.body, animals);
 
-        //Were using res.json() to send the data back to the client.
-        res.json(animal);
-    }
+//         //Were using res.json() to send the data back to the client.
+//         res.json(animal);
+//     }
 
-});
+// });
 
 
-//HTML PAGES IMPORTED FROM ZIP FILE
-//   '/' brings us to the root route used to create a homepage for a server.
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/index.html'));
-});
+// //HTML PAGES IMPORTED FROM ZIP FILE
+// //   '/' brings us to the root route used to create a homepage for a server.
+// app.get('/', (req, res) => {
+//     res.sendFile(path.join(__dirname, './public/index.html'));
+// });
 
-//HTML PAGES IMPORTED FROM ZIP FILE
-app.get('/animals', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/animals.html'));
-});
+// //HTML PAGES IMPORTED FROM ZIP FILE
+// app.get('/animals', (req, res) => {
+//     res.sendFile(path.join(__dirname, './public/animals.html'));
+// });
 
-//HTML PAGES IMPORTED FROM ZIP FILE
-app.get('/zookeepers', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
-});
+// //HTML PAGES IMPORTED FROM ZIP FILE
+// app.get('/zookeepers', (req, res) => {
+//     res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+// });
 
-//a wildcard route to catch requests to routes that don't exist.. Should come last!
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/index.html'));
-});
+// //a wildcard route to catch requests to routes that don't exist.. Should come last!
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, './public/index.html'));
+// });
 
 
 //we need to make our server listen. app.listen should always be last.
