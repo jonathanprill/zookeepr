@@ -3,6 +3,8 @@ const fs = require('fs');
 //Path, built into the Node.js, makes working with our file system a little more predictable
 const path = require('path');
 
+
+
 const { animals } = require('./data/animals.json');
 
 const express = require('express');
@@ -19,7 +21,8 @@ app.use(express.urlencoded({ extended: true }));
 //parse incoming JSON data
 app.use(express.json());
 
-
+//Express.js middleware that instructs the server to make certain files readily available and to not gate it behind a server endpoint.
+app.use(express.static('public'));
 
 //This function will take in req.query as an argument and filter through the animals accordingly, returning the new filtered array.
 function filterByQuery(query, animalsArray) {
@@ -154,9 +157,35 @@ app.post('/api/animals', (req, res) => {
 
 });
 
-//we need to make our server listen. app.listen can be placed at any point after app is declared.
+
+//HTML PAGES IMPORTED FROM ZIP FILE
+//   '/' brings us to the root route used to create a homepage for a server.
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
+
+//HTML PAGES IMPORTED FROM ZIP FILE
+app.get('/animals', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+
+//HTML PAGES IMPORTED FROM ZIP FILE
+app.get('/zookeepers', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
+
+//a wildcard route to catch requests to routes that don't exist.. Should come last!
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
+
+
+//we need to make our server listen. app.listen should always be last.
 app.listen(PORT, () => {
     console.log(`API server now on port ${PORT}!`);
 });  //then typed 'npm start' into terminal
 
 
+
+////////////NOTES////////////
+//Deploying to Heroku:  git push heroku <your-feature-branchname>:main
