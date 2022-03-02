@@ -47,6 +47,13 @@ function filterByQuery(query, animalsArray) {
     return filteredResults;
 }
 
+//New  function  that takes in the id and array of animals and returns a single animal object
+function findById(id, animalsArray) {
+    const result = animalsArray.filter(animal => animal.id === id)[0];
+    return result; 
+}
+
+
 //creating a route that the front-end can request data from.Add the route just before app.listen()
 //The second arg is a callback function that will execute every time that route is accessed with a GET request.
 app.get('/api/animals', (req, res) => {
@@ -55,6 +62,17 @@ app.get('/api/animals', (req, res) => {
         results = filterByQuery(req.query, results);
     }
     res.json(results);
+});
+
+//new GET route SEARCH BY ID...A PARAM route must come after the other GET route
+//.param is specific to a single property, often intended to retrieve a single record.
+app.get('/api/animals/:id', (req, res) => {
+    const result = findById(req.params.id, animals);
+    if (result) {
+        res.json(result);
+    } else {
+        res.send(404);
+    }
 });
 
 //we need to make our server listen. 
